@@ -24,7 +24,7 @@ function ProductCard({ product, onAdd }) {
         border: '1.5px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
-    }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -87,3 +87,66 @@ function ProductCard({ product, onAdd }) {
           >
             <ShoppingBag size={14} /> Add
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Shop() {
+  const [filter, setFilter] = useState('all');
+  const { addToCart } = useCart();
+  const storedProducts = JSON.parse(localStorage.getItem('jmanelProducts') || 'null');
+  const products = storedProducts || initialProducts;
+  const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
+
+  return (
+    <div>
+      <div style={{
+        background: 'linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 60%, #3d9960 100%)',
+        color: 'white', padding: '70px 24px 60px', textAlign: 'center', position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', top: -40, right: -60, width: 300, height: 300, background: 'rgba(245,197,24,0.07)', borderRadius: '50%' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 3.2rem)', fontWeight: 800, lineHeight: 1.2, marginBottom: 14 }}>
+            Your Natural Hair Deserves{' '}
+            <span style={{ color: 'var(--yellow)' }}>The Best</span>
+          </h1>
+          <p style={{ fontSize: '1.05rem', opacity: 0.88, maxWidth: 520, margin: '0 auto 28px', lineHeight: 1.6 }}>
+            Premium botanical hair care crafted with Jamaican Black Castor Oil, Rosemary, and powerful natural ingredients
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {['🌱 Chemical Free', '👧 Kids Line', '⭐ Premium Quality', '🇳🇬 Delivered in Lagos'].map(b => (
+              <span key={b} style={{
+                background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)',
+                padding: '6px 16px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 500,
+              }}>{b}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 14 }}>
+          <h2 style={{ fontSize: '1.7rem', color: 'var(--green-dark)' }}>Our Products</h2>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {FILTERS.map(f => (
+              <button key={f.key} onClick={() => setFilter(f.key)}
+                style={{
+                  background: filter === f.key ? 'var(--green-dark)' : 'white',
+                  color: filter === f.key ? 'white' : 'var(--text-mid)',
+                  border: `1.5px solid ${filter === f.key ? 'var(--green-dark)' : 'var(--border)'}`,
+                  padding: '7px 16px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer',
+                }}>{f.label}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
+          {filtered.map(p => (
+            <ProductCard key={p.id} product={p} onAdd={addToCart} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
