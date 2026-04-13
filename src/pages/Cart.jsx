@@ -1,5 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router';
+import React, { useState } from 'react';
+import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import storeConfig from '../data/storeConfig';
 
 export default function Cart({ cart = [], onUpdateQuantity, onRemoveItem }) {
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
