@@ -3,116 +3,111 @@ import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import storeConfig from '../data/storeConfig';
 
-export default function Cart({ cart = [], onUpdateQuantity, onRemoveItem }) {
-  const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+const { delivery: DC, vatRate, promoCodes } = storeConfig;
+
+export default function Cart({ setPage }) {
+  const { cart, removeFromCart, changeQty, showToast } = useCart();
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const tax = Math.round(subtotal * vatRate);
+  const deliveryFee = subtotal >= DC.freeThreshold ? 0 : DC.lagos;
+  const discountAmt = Math.round(subtotal * (discount / 100));
+  const total = subtotal + tax + deliveryFee - discountAmt;
+
+  function applyPromo() {
+    const code = promoCode.trim().toUpperCase();
+    const pct = promoCodes[code];
+    if (pct) { setDiscount(pct); showToast(`🎉 Promo applied! ${pct}% off`); }
+    else showToast('❌ Invalid promo code');
+  }
 
   if (cart.length === 0) {
     return (
-      <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-        <h2>Your cart is empty</h2>
-        <p>Looks like you haven't added any natural hair kits yet.</p>
-        <Link to="/" style={linkButtonStyle}>Continue Shopping</Link>
+      <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+        <div style={{ fontSize: '4rem', marginBottom: 16 }}>🛒</div>
+        <h2 style={{ fontSize: '1.5rem', color: 'var(--green-dark)', marginBottom: 10 }}>Your cart is empty</h2>
+        <p style={{ color: 'var(--text-light)', marginBottom: 24 }}>Add some amazing natural hair products!</p>
+        <button onClick={() => setPage('shop')}
+          style={{ background: 'var(--green-dark)', color: 'white', border: 'none', borderRadius: 12, padding: '12px 28px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}>
+          Shop Now
+        </button>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '2rem' }}>Your Shopping Cart</h1>
-      
-      <div style={{ borderTop: '1px solid #eee' }}>
-        {cart.map((item) => (
-          <div key={item.id} style={cartItemStyle}>
-            <img src={item.image} alt={item.name} style={imageStyle} />
-            
-            <div style={{ flexGrow: 1, padding: '0 1.5rem' }}>
-              <h3 style={{ margin: '0 0 5px 0' }}>{item.name}</h3>
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>₦{item.price.toLocaleString()}</p>
+    <div style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 24px' }}>
+      <h2 style={{ fontSize: '1.6rem', color: 'var(--green-dark)', marginBottom: 28 }}>
+        Your Cart ({cart.reduce((s, i) => s + i.qty, 0)} items)
+      </h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 28 }}>
+        <div style={{ background: 'white', borderRadius: 'var(--radius)', padding: 24, boxShadow: 'var(--shadow)' }}>
+          {cart.map(item => (
+            <div key={item.id} style={{ display: 'flex', gap: 14, padding: '16px 0', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
+              <div style={{ width: 72, height: 72, borderRadius: 10, background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', flexShrink: 0, overflow: 'hidden' }}>
+                {item.image ? <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : item.emoji}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 2 }}>{item.name}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-light)' }}>{item.brand}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <button onClick={() => changeQty(item.id, -1)} style={{ width: 28, height: 28, border: '1.5px solid var(--border)', borderRadius: 8, background: 'var(--cream)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Minus size={12} />
+                  </button>
+                  <span style={{ fontWeight: 600, minWidth: 20, textAlign: 'center' }}>{item.qty}</span>
+                  <button onClick={() => changeQty(item.id, 1)} style={{ width: 28, height: 28, border: '1.5px solid var(--border)', borderRadius: 8, background: 'var(--cream)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Plus size={12} />
+                  </button>
+                  <button onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', color: '#e53e3e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.8rem' }}>
+                    <Trash2 size={13} /> Remove
+                  </button>
+                </div>
+              </div>
+              <div style={{ fontWeight: 700, color: 'var(--green-dark)', whiteSpace: 'nowrap' }}>
+                ₦{(item.price * item.qty).toLocaleString()}
+              </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button 
-                onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                style={qtyButtonStyle}
-              >-</button>
-              <span style={{ fontWeight: '600', width: '20px', textAlign: 'center' }}>{item.quantity}</span>
-              <button 
-                onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                style={qtyButtonStyle}
-              >+</button>
-            </div>
-
-            <div style={{ minWidth: '100px', textAlign: 'right', marginLeft: '1.5rem' }}>
-              <p style={{ fontWeight: 'bold', margin: 0 }}>
-                ₦{(item.price * item.quantity).toLocaleString()}
-              </p>
-              <button 
-                onClick={() => onRemoveItem(item.id)}
-                style={{ color: '#ff4444', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.8rem', marginTop: '5px' }}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ marginTop: '2rem', borderTop: '2px solid #000', paddingTop: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.3rem', fontWeight: 'bold' }}>
-          <span>Subtotal</span>
-          <span>₦{subtotal.toLocaleString()}</span>
+          ))}
         </div>
-        <p style={{ color: '#666', fontSize: '0.9rem', textAlign: 'right', marginTop: '5px' }}>
-          Shipping and taxes calculated at checkout.
-        </p>
-        
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem', gap: '1rem' }}>
-          <Link to="/" style={{ ...linkButtonStyle, backgroundColor: '#f4f4f4', color: '#000' }}>
-            Back to Shop
-          </Link>
-          <Link to="/checkout" style={linkButtonStyle}>
-            Proceed to Checkout
-          </Link>
+
+        <div style={{ background: 'white', borderRadius: 'var(--radius)', padding: 24, boxShadow: 'var(--shadow)', height: 'fit-content', position: 'sticky', top: 80 }}>
+          <h3 style={{ fontSize: '1.15rem', marginBottom: 20, color: 'var(--green-dark)' }}>Order Summary</h3>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            <input value={promoCode} onChange={e => setPromoCode(e.target.value)}
+              placeholder="Promo code"
+              style={{ flex: 1, border: '1.5px solid var(--border)', borderRadius: 10, padding: '9px 12px', fontSize: '0.85rem', outline: 'none' }}
+              onKeyDown={e => e.key === 'Enter' && applyPromo()} />
+            <button onClick={applyPromo} style={{ background: 'var(--yellow)', border: 'none', borderRadius: 10, padding: '9px 14px', fontWeight: 600, cursor: 'pointer', color: 'var(--green-dark)' }}>
+              Apply
+            </button>
+          </div>
+          {[
+            ['Subtotal', `₦${subtotal.toLocaleString()}`],
+            ['VAT (7.5%)', `₦${tax.toLocaleString()}`],
+            ['Delivery', deliveryFee === 0 ? '🎉 FREE' : `₦${deliveryFee.toLocaleString()}`],
+            ...(discount ? [[`Discount (${discount}%)`, `-₦${discountAmt.toLocaleString()}`]] : []),
+          ].map(([label, val]) => (
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: '0.9rem' }}>
+              <span style={{ color: 'var(--text-mid)' }}>{label}</span>
+              <span>{val}</span>
+            </div>
+          ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.05rem', borderTop: '2px solid var(--border)', paddingTop: 12, marginTop: 8, color: 'var(--green-dark)' }}>
+            <span>Total</span><span>₦{total.toLocaleString()}</span>
+          </div>
+          {subtotal < DC.freeThreshold && (
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-light)', marginTop: 8 }}>
+              Add ₦{(DC.freeThreshold - subtotal).toLocaleString()} more for free delivery!
+            </p>
+          )}
+          <button onClick={() => setPage('checkout')}
+            style={{ width: '100%', background: 'var(--green-dark)', color: 'white', border: 'none', borderRadius: 12, padding: 14, fontSize: '1rem', fontWeight: 700, cursor: 'pointer', marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <ShoppingBag size={17} /> Proceed to Checkout
+          </button>
         </div>
       </div>
     </div>
   );
 }
-
-// Styling Objects
-const cartItemStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  padding: '1.5rem 0',
-  borderBottom: '1px solid #eee'
-};
-
-const imageStyle = {
-  width: '80px',
-  height: '80px',
-  objectFit: 'cover',
-  borderRadius: '8px',
-  background: '#f9f9f9'
-};
-
-const qtyButtonStyle = {
-  width: '30px',
-  height: '30px',
-  border: '1px solid #ddd',
-  background: '#fff',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center'
-};
-
-const linkButtonStyle = {
-  padding: '12px 24px',
-  backgroundColor: '#000',
-  color: '#fff',
-  textDecoration: 'none',
-  borderRadius: '4px',
-  fontWeight: '600',
-  display: 'inline-block'
-};
