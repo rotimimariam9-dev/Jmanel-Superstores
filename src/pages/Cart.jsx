@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 export default function Cart({ cart = [], onUpdateQuantity, onRemoveItem }) {
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
