@@ -1,43 +1,29 @@
 import React, { useState } from 'react';
+import { useCart } from '../context/CartContext';
+import storeConfig from '../data/storeConfig';
 
-export default function Checkout({ cart = [], total = 0, onClearCart }) {
-  const [orderComplete, setOrderComplete] = useState(false);
+const { delivery: DC, vatRate, payment: PAY } = storeConfig;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // In a real app, you'd send this data to your database/API here
-    setOrderComplete(true);
-    onClearCart();
+const PAYMENT_METHODS = [
+  { key: 'opay', icon: '🟢', label: 'OPay Transfer', sub: 'Instant transfer' },
+  { key: 'bank', icon: '🏦', label: 'Bank Transfer', sub: 'Any Nigerian bank' },
+  { key: 'ussd', icon: '📱', label: 'USSD Payment', sub: 'Dial from your phone' },
+  { key: 'pod',  icon: '💵', label: 'Pay on Delivery', sub: 'Cash at doorstep' },
+];
+
+const STATES = ['Lagos','Abuja','Rivers','Ogun','Oyo','Kano','Kaduna','Enugu','Anambra','Delta','Edo','Imo','Kwara','Osun','Ekiti','Ondo','Cross River','Akwa Ibom','Benue','Other'];
+
+function PaymentInfo({ method }) {
+  const base = { borderRadius: 12, padding: '14px 16px', fontSize: '0.85rem', lineHeight: 1.8, marginTop: 14 };
+  const boxes = {
+    opay: { style: { ...base, background: '#e8f5e9', border: '1px solid #a8d5b5' }, content: <><strong>💚 OPay Transfer Details</strong><br />Bank: <strong>{PAY.bankName}</strong><br />Account Name: <strong>{PAY.accountName}</strong><br />Account Number: <strong>{PAY.accountNumber}</strong><br /><br />Send receipt to WhatsApp: <strong>📲 {PAY.whatsapp}</strong><br /><em style={{ color: 'var(--text-mid)' }}>Include your order reference.</em></> },
+    bank: { style: { ...base, background: '#e8f5e9', border: '1px solid #a8d5b5' }, content: <><strong>🏦 Bank Transfer</strong><br />Bank: <strong>{PAY.bankName}</strong><br />Account Name: <strong>{PAY.accountName}</strong><br />Account Number: <strong>{PAY.accountNumber}</strong><br />Send proof to WhatsApp: <strong>📲 {PAY.whatsapp}</strong></> },
+    ussd: { style: { ...base, background: '#fff3e0', border: '1px solid #ffcc80' }, content: <><strong>📱 USSD Transfer</strong><br />Transfer to <strong>{PAY.bankName} — {PAY.accountNumber}</strong><br /><br /><strong>GTBank:</strong> *737*1*Amount*0058*AccNum#<br /><strong>Access:</strong> *901*Amount*AccNum#<br /><strong>Zenith:</strong> *966*Amount*AccNum#<br /><strong>UBA:</strong> *919*3*AccNum*Amount#<br /><strong>First Bank:</strong> *894*Amount*AccNum#<br /><strong>OPay:</strong> *955*AccNum*Amount#<br /><br />Send proof to: <strong>📲 {PAY.whatsapp}</strong></> },
+    pod: { style: { ...base, background: 'var(--yellow-light)', border: '1px solid var(--yellow)' }, content: <><strong>💵 Pay on Delivery</strong><br />✅ Available within Lagos only.<br />✅ Have exact cash ready at delivery.<br />✅ ₦{DC.podHandlingFee.toLocaleString()} handling fee added to total.</> },
   };
-
-  if (orderComplete) return <SuccessPage />;
-
-  return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-      <h2>Checkout</h2>
-      <div style={{ background: '#f9f9f9', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
-        {cart.map(item => (
-          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span>{item.name} x {item.quantity}</span>
-            <span>₦{(item.price * item.quantity).toLocaleString()}</span>
-          </div>
-        ))}
-        <hr />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-          <span>Total</span>
-          <span>₦{total.toLocaleString()}</span>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input type="text" placeholder="Full Name" required style={inputStyle} />
-        <input type="email" placeholder="Email Address" required style={inputStyle} />
-        <input type="text" placeholder="Shipping Address" required style={inputStyle} />
-        <button type="submit" style={buttonStyle}>Place Order</button>
-      </form>
-    </div>
-  );
+  const current = boxes[method];
+  if (!current) return null;
+  return <div style={current.style}>{current.content}</div>;
 }
 
-const inputStyle = { padding: '12px', borderRadius: '4px', border: '1px solid #ccc' };
-const buttonStyle = { padding: '15px', background: '#000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' };
+export default function Checkout({ setPage,
