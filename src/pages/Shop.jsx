@@ -24,8 +24,7 @@ function ProductCard({ product, onAdd }) {
         border: '1.5px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
-     </div>
- }}
+    }
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
