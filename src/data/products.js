@@ -1,16 +1,16 @@
 const products = [
   {
     id: 1,
-    name: "Hair Loss Treatment Shampoo",
+    name: "Adult Full Kit",
     brand: "Botaniré",
-    desc: "Infused with Jamaican Black Castor Oil, Rosemary, Amla, Peppermint & Vitamins. Free from harsh chemicals.",
-    price: 8500,
-    oldPrice: 10000,
+    desc: "Shampoo, conditioner, leave-in conditioner, Deep Conditioning masque, herbal growth butter.",
+    price: 20000,
+    oldPrice: ,
     category: "adult",
-    tags: ["Chemical Free", "300ml"],
+    tags: ["Chemical Free"],
     emoji: "🧴",
     badge: null,
-    image: null,
+    image: "/images/fullkit.jpg.jpeg",
   },
   {
     id: 2,
