@@ -10,7 +10,7 @@ const products = [
     tags: ["Chemical Free"],
     emoji: "🧴",
     badge: null,
-    image: null",
+    image: null,
   },
   {
     id: 2,
