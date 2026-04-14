@@ -10,7 +10,7 @@ const products = [
     tags: ["Chemical Free"],
     emoji: "🧴",
     badge: null,
-    image: "/images/fullkit.jpg.jpeg",
+    image: null",
   },
   {
     id: 2,
