@@ -5,7 +5,7 @@ const products = [
     brand: "Botaniré",
     desc: "Shampoo, conditioner, leave-in conditioner, Deep Conditioning masque, herbal growth butter.",
     price: 20000,
-    oldPrice: ,
+    oldPrice: 25000,
     category: "adult",
     tags: ["Chemical Free"],
     emoji: "🧴",
